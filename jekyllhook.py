@@ -137,7 +137,7 @@ def event():
 
     #Check whether we want to have any specific args
     args=[]
-    if any(commit["added"]+commit["removed"] for commit in data["commits"]):
+    if any(commit["added"]+commit["removed"]+[mod for mod in commit["modified"] if "_data" in mod] for commit in data["commits"]):
         logging.info("Detected added/removed files, will run all scripts with --full-rebuild")
         args.append("--full-rebuild")
 
