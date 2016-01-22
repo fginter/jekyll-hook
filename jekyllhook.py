@@ -115,14 +115,17 @@ def run_script(script):
 
     logging.info('completed {}'.format(script_txt))
 
-def run_scripts(args=[],directory=SCRIPT_DIR):
+def run_scripts(script_cats,args=[],directory=SCRIPT_DIR):
     if directory is None:
         return None
 
-    scripts = glob(os.path.join(directory, '*.sh'))
+    scripts = sorted(glob(os.path.join(directory, '*.sh')))
 
     for script in scripts:
-        run_script([script]+args)
+        for c in script_cats:
+            if c in script:
+                run_script([script]+args)
+                break
 
 @app.route('/', methods=['POST'])
 def event():
@@ -136,12 +139,17 @@ def event():
     fn = log_event(pretty_print_json(data))
 
     #Check whether we want to have any specific args
+    scripts=set()
     args=[]
     if any(commit["added"]+commit["removed"]+[mod for mod in commit["modified"] if "_data" in mod] for commit in data["commits"]):
         logging.info("Detected added/removed files, will run all scripts with --full-rebuild")
         args.append("--full-rebuild")
-
-    run_scripts(args=args)
+        scripts.add("deploy")
+    if any([mod for mod in commit["modified"] if "stests.yaml" in mod or "syn_validation_run.py" in mod] for commit in data["commits"]):
+        scripts.add("svalid")
+    if any([mod for mod in commit["modified"] if not("stests.yaml" in mod or "syn_validation_run.py" in mod)] for commit in data["commits"]):
+        scripts.add("deploy")
+    run_scripts(scripts,args=args)
 
     send_email(fn, data)
 
