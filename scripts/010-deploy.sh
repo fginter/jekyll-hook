@@ -19,16 +19,19 @@ TMP_DIR=$(realpath $(mktemp -d --tmpdir=.))
 cd $SOURCE_REPO
 #git checkout $SOURCE_BRANCH
 git pull
-
+#cd gen_index
+#python index_page.py --ud-data=/home/ginter/UD > ../_includes/at_glance.html
+#cd ..
+#echo "now in $(pwd)"
 # build site (ends up in _site)
 
 ## Note that arguments of this script are passed to jekyll, this is used to call --full-rebuild
 jekyll build $*
 # --full-rebuild
-#/var/lib/gems/2.0.0/gems/jekyll-2.5.3/bin/jekyll build
+#/var/lib/gems/2.0.0/gems/jekyll-2.5.3/bin/jekyll build $*
 
 # copy site to temporary directory
-cd -
+cd ..
 rm -rf $TMP_DIR
 cp -R $SOURCE_REPO/_site $TMP_DIR
 
